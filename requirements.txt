@@ -3,3 +3,4 @@ pydantic
 pydantic-settings
 python-dotenv
 SQLAlchemy
+fastapi[standard]
