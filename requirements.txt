@@ -1,6 +1,10 @@
-psycopg
+psycopg[binary]
 pydantic
 pydantic-settings
 python-dotenv
 SQLAlchemy
 fastapi[standard]
+passlib[bcrypt]
+bcrypt==3.2.2
+pytest
+pytest-postgresql
