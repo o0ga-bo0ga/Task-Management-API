@@ -8,7 +8,10 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf8")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf8",
+        extra="ignore")
 
 @lru_cache
 def get_settings():
