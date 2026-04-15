@@ -28,7 +28,7 @@ This separation means each layer has one job. A router should never know how a p
 
 1. Clone the repository
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/o0ga-bo0ga/Task-Management-API.git
    cd task-api
    ```
 
