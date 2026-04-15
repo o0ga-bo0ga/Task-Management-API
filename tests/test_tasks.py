@@ -27,7 +27,8 @@ def test_get_tasks(auth_client):
     response_data = response.json()
 
     assert response.status_code == 200
-    assert len(response_data) >= 2
+    assert response_data["total"] >= 2
+    assert len(response_data["items"]) >= 2
 
 def test_get_single_task(auth_client):
     payload = {

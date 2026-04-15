@@ -6,10 +6,13 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 from app.config import get_settings
+import structlog
 
 env_settings = get_settings()
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+log = structlog.get_logger()
 
 def hash_password(password: str) -> str:
     return password_context.hash(password)
@@ -22,6 +25,8 @@ def create_user(db: Session, user_data: UserCreate) -> User:
     db.commit()
     db.refresh(new_user)
 
+    log.info("user_created", email=user_data.email)
+
     return new_user
 
 def authenticate_user(db: Session, email: str, password: str):
@@ -30,6 +35,7 @@ def authenticate_user(db: Session, email: str, password: str):
     user = db.execute(select_query).scalar_one_or_none()
 
     if not user or not password_context.verify(password, user.hashed_password):
+        log.warning("authentication_failed", email=email)
         return None
     else:
         return user

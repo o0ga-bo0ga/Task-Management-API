@@ -1,4 +1,4 @@
-from pydantic import BaseModel, SecretStr, ConfigDict, EmailStr, AwareDatetime
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 from app.models.task import Status
@@ -22,3 +22,7 @@ class TaskResponse(BaseModel):
     created_at: datetime
     status: Status
     updated_at: datetime
+
+class PaginatedTaskResponse(BaseModel):
+    total: int
+    items: list[TaskResponse]

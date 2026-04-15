@@ -1,7 +1,7 @@
-from app.schemas.task import TaskCreate, TaskUpdate
-from app.models.task import Task
+from app.schemas.task import TaskCreate, TaskUpdate, PaginatedTaskResponse
+from app.models.task import Task, Status
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 def create_task(db: Session, task_data: TaskCreate, owner_id: int) -> Task:
     new_task = Task(title=task_data.title,
@@ -22,11 +22,20 @@ def get_task_by_id(db: Session, task_id: int) -> Task | None:
 
     return task
 
-def get_tasks_for_user(db: Session, owner_id: int) -> list[Task]:
+def get_tasks_for_user(db: Session, owner_id: int, status: Status | None, page: int, page_size: int) -> dict:
     select_query = select(Task).where(Task.owner_id == owner_id)
+
+    if(status is not None): 
+        select_query = select_query.where(Task.status == status)
+
+    count_query = select(func.count()).select_from(select_query.subquery())
+    count = db.execute(count_query).scalar()
+
+    select_query = select_query.offset((page-1)*page_size).limit(page_size)
+    
     tasks = db.execute(select_query).scalars().all()
 
-    return tasks
+    return {"total": count, "items": list(tasks)}
 
 def update_task(db: Session, task: Task, update_data: TaskUpdate) -> Task:
     update_data = update_data.model_dump(exclude_unset=True)

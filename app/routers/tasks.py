@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
-from app.schemas.task import TaskCreate, TaskUpdate, TaskResponse
+from app.schemas.task import TaskCreate, TaskUpdate, TaskResponse, PaginatedTaskResponse
 from app.services.task_service import create_task as create_task_service, get_tasks_for_user, get_task_by_id, update_task as update_task_service, delete_task as delete_task_service
 from app.dependencies import get_current_user, get_db
 from app.models.user import User
+from app.models.task import Status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import Annotated
 
@@ -14,9 +16,9 @@ def create_task(task_data: TaskCreate, db: Session=Depends(get_db), user: User =
     return task
 
 @router.get("/")
-def get_all_tasks(db: Session=Depends(get_db), user: User = Depends(get_current_user)) -> list[TaskResponse]:
-    tasks = get_tasks_for_user(db, user.id)
-    return tasks
+def get_all_tasks(db: Session=Depends(get_db), user: User = Depends(get_current_user), page: int = 1, page_size: int = 10, status: Status | None = None) -> PaginatedTaskResponse:
+    response = get_tasks_for_user(db, user.id, status, page, page_size)
+    return response
 
 @router.get("/{task_id}")
 def get_task(task_id: int, db: Session=Depends(get_db), user: User = Depends(get_current_user)) -> TaskResponse:
