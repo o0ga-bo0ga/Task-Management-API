@@ -13,3 +13,4 @@ class User(Base):
     created_at = Column(DateTime, index=True, server_default=func.now()) 
 
     tasks = relationship("Task", back_populates="owner")
+    notifications = relationship("Notification", back_populates="owner")

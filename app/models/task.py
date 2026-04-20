@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text, Enum
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Enum
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -22,5 +22,6 @@ class Task(Base):
     updated_at = Column(DateTime, index=True, server_default=func.now(), onupdate=func.now())
 
     owner = relationship("User", back_populates="tasks")
+    notifications = relationship("Notification", back_populates="tasks")
 
      

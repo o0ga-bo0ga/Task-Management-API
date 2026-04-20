@@ -8,6 +8,7 @@ from app.database import Base
 from app.config import get_settings
 from app.models.task import Task
 from app.models.user import User
+from app.models.notification import Notification
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -61,7 +62,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = create_engine(get_settings().DATABASE_URL, poolclass=pool.NullPool)
+    connectable = create_engine(get_settings().DATABASE_URL.replace("postgresql+asyncpg", "postgresql"), poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
         context.configure(
