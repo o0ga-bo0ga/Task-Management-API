@@ -1,12 +1,15 @@
-psycopg[binary]
+asyncpg
 pydantic
 pydantic-settings
 python-dotenv
-SQLAlchemy
+SQLAlchemy[asyncio]
 fastapi[standard]
 passlib[bcrypt]
 bcrypt==3.2.2
 pytest
 pytest-postgresql
+pytest-asyncio
 python-jose
 structlog
+alembic
+aiosqlite

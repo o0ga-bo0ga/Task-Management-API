@@ -1,6 +1,6 @@
 from app.schemas.user import UserCreate
 from app.models.user import User
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
@@ -17,22 +17,23 @@ log = structlog.get_logger()
 def hash_password(password: str) -> str:
     return password_context.hash(password)
 
-def create_user(db: Session, user_data: UserCreate) -> User:
+async def create_user(db: AsyncSession, user_data: UserCreate) -> User:
     hashed_password = hash_password(user_data.password.get_secret_value())
     new_user = User(email=user_data.email, hashed_password=hashed_password)
 
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    await db.commit()
+    await db.refresh(new_user)
 
     log.info("user_created", email=user_data.email)
 
     return new_user
 
-def authenticate_user(db: Session, email: str, password: str):
+async def authenticate_user(db: AsyncSession, email: str, password: str):
     select_query = select(User).where(User.email == email)
 
-    user = db.execute(select_query).scalar_one_or_none()
+    result = await db.execute(select_query)
+    user = result.scalar_one_or_none()
 
     if not user or not password_context.verify(password, user.hashed_password):
         log.warning("authentication_failed", email=email)
