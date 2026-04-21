@@ -3,11 +3,19 @@ from .routers.auth import router as auth_router
 from .routers.tasks import router as task_router
 from .database import engine, Base
 from .models import user
+import logging
+import sys
 import structlog
 from structlog.stdlib import LoggerFactory
 from structlog.contextvars import bind_contextvars, clear_contextvars
 import uuid
 from .exceptions import global_exception_handler, http_exception_handler
+
+logging.basicConfig(
+    format="%(message)s", 
+    stream=sys.stdout, 
+    level=logging.INFO,
+)
 
 structlog.configure(
     logger_factory=LoggerFactory(),

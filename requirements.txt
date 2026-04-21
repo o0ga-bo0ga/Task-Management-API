@@ -14,3 +14,4 @@ python-jose
 structlog
 alembic
 aiosqlite
+redis[asyncio]

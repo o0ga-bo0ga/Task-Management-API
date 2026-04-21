@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, Boolean, DateTime, ForeignKey, Text, Enu
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
-import enum
 
 class Notification(Base):
     __tablename__ = "notifications"

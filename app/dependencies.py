@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 env_settings = get_settings()
 
-oauth_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 async def get_db():
     async with SessionLocal() as db:

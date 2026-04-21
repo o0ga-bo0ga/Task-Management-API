@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from app.database import Base
 from app.dependencies import get_db
+from app.cache import get_cache
 from app.main import app
 from fastapi.testclient import TestClient
 import asyncio
@@ -12,6 +13,22 @@ TestingSessionLocal = async_sessionmaker(engine, autocommit=False, autoflush=Fal
 async def override_get_db():
     async with TestingSessionLocal() as db:
         yield db
+
+class FakeRedis:
+    def __init__(self):
+        self._store = {}
+
+    async def get(self, key):
+        return self._store.get(key)
+    
+    async def set(self, key, value, ex=None):
+        self._store[key] = value
+    
+    async def delete(self, key):
+        self._store.pop(key, None)
+
+async def override_get_cache():
+    yield FakeRedis()
 
 async def create_tables():
     async with engine.begin() as conn:
@@ -25,6 +42,7 @@ async def drop_tables():
 def client():
     asyncio.run(create_tables())
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_cache] = override_get_cache
 
     with TestClient(app) as test_client:
         yield test_client

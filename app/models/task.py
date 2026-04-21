@@ -22,6 +22,6 @@ class Task(Base):
     updated_at = Column(DateTime, index=True, server_default=func.now(), onupdate=func.now())
 
     owner = relationship("User", back_populates="tasks")
-    notifications = relationship("Notification", back_populates="tasks")
+    notifications = relationship("Notification", back_populates="task")
 
      
