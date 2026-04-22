@@ -6,8 +6,12 @@ from app.cache import get_cache
 from app.main import app
 from fastapi.testclient import TestClient
 import asyncio
+from unittest.mock import patch
+
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db" 
+
 engine = create_async_engine(TEST_DATABASE_URL)
+
 TestingSessionLocal = async_sessionmaker(engine, autocommit=False, autoflush=False, expire_on_commit=False)
 
 async def override_get_db():
@@ -41,6 +45,7 @@ async def drop_tables():
 @pytest.fixture()
 def client():
     asyncio.run(create_tables())
+
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_cache] = override_get_cache
 
@@ -48,6 +53,11 @@ def client():
         yield test_client
 
     asyncio.run(drop_tables())
+
+@pytest.fixture(autouse=True)
+def mock_celery():
+    with patch("app.tasks.notification_tasks.send_notification.delay") as mock:
+        yield mock
 
 @pytest.fixture()
 def auth_client(client):
@@ -65,7 +75,9 @@ def auth_client(client):
     response = client.post("/auth/login", data=login_payload)
 
     token = response.json().get("access_token")
+    
     client.headers.update({"Authorization": f"Bearer {token}"})
+    
     yield client
 
 @pytest.fixture()
