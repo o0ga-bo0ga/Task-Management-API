@@ -7,6 +7,7 @@ from app.services.auth_service import authenticate_user, create_access_token
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import Annotated
+from app.limiter import rate_limit_login
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -20,7 +21,9 @@ async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db
         raise HTTPException(status_code=400, detail="Email already registered")
     
 @router.post("/login")
-async def login_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: AsyncSession = Depends(get_db)):
+async def login_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+                     db: AsyncSession = Depends(get_db),
+                     _: None = Depends(rate_limit_login)):
     user = await authenticate_user(db, form_data.username, form_data.password)
     
     if not user:
