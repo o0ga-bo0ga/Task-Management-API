@@ -1,9 +1,9 @@
-from fastapi import Request, HTTPException, status
-import redis.asyncio as redis
-from app.cache import pool
+from fastapi import Request, HTTPException, status, Depends
+import redis.asyncio as Redis
+from app.cache import get_cache
 
-async def rate_limit_login(request: Request):
-    client = redis.Redis(connection_pool=pool)
+async def rate_limit_login(request: Request,
+                           client: Redis = Depends(get_cache)):
 
     ip = request.client.host
     key = f"rate_limit:login:{ip}"

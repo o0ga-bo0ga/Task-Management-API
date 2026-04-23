@@ -31,6 +31,13 @@ class FakeRedis:
     async def delete(self, key):
         self._store.pop(key, None)
 
+    async def incr(self, key):
+        self._store[key] = self._store.get(key, 0) + 1
+        return self._store[key]
+
+    async def expire(self, key, seconds):
+        pass
+
 async def override_get_cache():
     yield FakeRedis()
 
@@ -57,6 +64,7 @@ def client():
 @pytest.fixture(autouse=True)
 def mock_celery():
     with patch("app.tasks.notification_tasks.send_notification.delay") as mock:
+        mock.return_value.id = "fake-job-id"
         yield mock
 
 @pytest.fixture()

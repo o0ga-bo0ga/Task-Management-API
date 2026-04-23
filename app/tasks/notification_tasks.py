@@ -3,6 +3,7 @@ import structlog
 from app.database import SyncSessionLocal as SessionLocal
 from app.models.notification import Notification
 import time
+import httpx
 
 logger = structlog.get_logger()
 
@@ -10,7 +11,8 @@ logger = structlog.get_logger()
 def send_notification(
         user_id: int,
         task_id: int,
-        message: str):
+        message: str,
+        callback_url: str | None = None):
     
     log = logger.bind(user_id=user_id,
                       task_id=task_id)
@@ -26,6 +28,24 @@ def send_notification(
             )
             session.add(notification)
             session.commit()
+    
+            if callback_url:
+                try:
+                    response = httpx.post(
+                        callback_url, 
+                        json={"job_id": task_id,
+                              "status": "SUCCESS",
+                              "user_id": user_id}, 
+                        timeout=10.0
+                    )
+                    response.raise_for_status() 
+                    logger.info("webhook_sent", status_code = response.status_code)
+                    
+                except httpx.RequestError as exc:
+                    logger.warning("webhook_connection_failed", error = str(exc))
+                except httpx.HTTPStatusError as exc:
+                    logger.warning("webhook_http_error", status_code = exc.response.status_code)
+            
 
             log.info("notification_sent_and_saved", message=message)
             return {"user_id": user_id}
