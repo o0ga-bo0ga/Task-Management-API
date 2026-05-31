@@ -1,37 +1,41 @@
 services:
-  app:
-    build: .
-    ports:
-      - "8080:8000"
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-    depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-  db:
+  # Databases
+  auth_db:
     image: postgres:15
     environment: 
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports: 
-      - "5432:5432"
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
+    ports:
+     - "5342:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+     - auth_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U  ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USER} -d ${AUTH_DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
+  task_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${TASK_DB_USER}
+      POSTGRES_PASSWORD: ${TASK_DB_PASSWORD}
+      POSTGRES_DB: ${TASK_DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - task_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TASK_DB_USER} -d ${TASK_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  # Cache
   cache:
     image: redis:8.4.2-alpine3.22
     restart: always
     ports:
-      - "6380:6379"
+      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -39,18 +43,41 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  worker:
-    build: .
-    command: celery -A app.worker.celery_app worker --loglevel=info
+  # Auth Service
+  auth-service:
+    build: ./auth-service
+    ports:
+     - "8081:8000"
+    expose:
+     - "50051"
     env_file:
-      - .env
-    volumes:
-      - .:/app
+     - ./auth-service/.env
     depends_on:
+      auth_db:
+        condition: service_healthy
+  # Task Service
+  task-service:
+    build: ./task-service
+    ports:
+     - "8080:8000"
+    env_file:
+     - ./task-service/.env
+    depends_on:
+      task_db:
+        condition: service_healthy
       cache:
         condition: service_healthy
-      db:
+  worker:
+    build: ./task-service
+    command: celery -A app.worker.celery_app worker --loglevel=info
+    env_file:
+      - ./task-service/.env
+    depends_on:
+      task_db:
+        condition: service_healthy
+      cache:
         condition: service_healthy
 volumes:
-  postgres_data:
+  auth_postgres_data:
+  task_postgres_data:
   redis_data:

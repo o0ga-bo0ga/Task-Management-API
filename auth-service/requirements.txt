@@ -18,3 +18,5 @@ redis[asyncio]
 celery[redis]
 httpx
 uvicorn[standard]
+grpcio
+grpcio-tools

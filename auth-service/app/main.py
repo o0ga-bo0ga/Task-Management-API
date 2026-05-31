@@ -7,6 +7,9 @@ from structlog.stdlib import LoggerFactory
 from structlog.contextvars import bind_contextvars, clear_contextvars
 import uuid
 from .exceptions import global_exception_handler, http_exception_handler
+from contextlib import asynccontextmanager
+import threading
+from .grpc.server import serve
 
 logging.basicConfig(
     format="%(message)s", 
@@ -24,8 +27,14 @@ structlog.configure(
     ]
 )
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    thread = threading.Thread(target=serve, daemon=True)
+    thread.start()
+    yield
+
 log = structlog.get_logger()
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, global_exception_handler)

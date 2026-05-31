@@ -1,4 +1,5 @@
 from .database import SessionLocal
+from .grpc.client import get_user_by_email
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -31,7 +32,12 @@ async def get_current_user(token: str = Depends(oauth_scheme)):
                                 detail="Could not validate credentials",
                                 headers={"WWW-Authenticate": "Bearer"})
 
-        return TokenUser(id=user_id, email=email)
+        user = get_user_by_email(email)
+        if user is None:
+            raise HTTPException(status_code=401,
+                                detail="User not found",
+                                headers={"WWW-Authenticate": "Bearer"})
+        return user
 
     except JWTError:
         raise HTTPException(status_code=401,

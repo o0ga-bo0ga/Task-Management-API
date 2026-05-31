@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package user;
+
+service UserService {
+  rpc GetUser (GetUserRequest) returns (UserResponse);
+}
+
+message GetUserRequest {
+  string email = 1;
+}
+
+message UserResponse {
+  int32 id = 1;
+  string email = 2;
+  bool is_active = 3;
+  bool found = 4;
+}
