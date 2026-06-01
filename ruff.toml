@@ -1,0 +1,7 @@
+target-version = "py311"
+
+[lint]
+ignore = [
+    "F401",  # unused imports (pre-existing across codebase)
+    "F841",  # unused variables (pre-existing)
+]
