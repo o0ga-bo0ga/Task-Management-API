@@ -73,45 +73,19 @@ def test_delete_task(auth_client):
     response = auth_client.get(f"/tasks/{task_id}")
     assert response.status_code == 404
 
-def test_cross_user_task_access(client: TestClient):
-    registration_payload = {
-            "email": "A@example.com",
-            "password": "12345678"
-            }
-    client.post("/auth/register", json=registration_payload)
+def test_cross_user_task_access(client: TestClient, user_switcher):
+    user_switcher.set_user(1, "A@example.com")
 
-    login_payload = {
-            "username": "A@example.com",
-            "password": "12345678"
-            }
-    response = client.post("/auth/login", data=login_payload)
-    
     payload = {
             "title": "Test Task",
             "description": "This is a test task"
             }
-    
-    token = response.json().get("access_token")
-    client.headers.update({"Authorization": f"Bearer {token}"})
 
     response = client.post("/tasks", json=payload)
     response_data = response.json()
     task_id = response_data["id"]
 
-    registration_payload = {
-                "email": "B@example.com",
-                "password": "12345678"
-                }
-    client.post("/auth/register", json=registration_payload)
-
-    login_payload = {
-            "username": "B@example.com",
-            "password": "12345678"
-            }
-    
-    response = client.post("/auth/login", data=login_payload)
-    token = response.json().get("access_token")
-    client.headers.update({"Authorization": f"Bearer {token}"})
+    user_switcher.set_user(2, "B@example.com")
 
     response = client.get(f"/tasks/{task_id}")
 

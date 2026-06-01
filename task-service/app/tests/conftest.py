@@ -1,12 +1,23 @@
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from app.database import Base
-from app.dependencies import get_db
+from app.dependencies import get_db, get_current_user, TokenUser
 from app.cache import get_cache
 from app.main import app
 from fastapi.testclient import TestClient
 import asyncio
 from unittest.mock import patch
+
+TEST_USER = TokenUser(id=1, email="test@example.com")
+
+class TestUserManager:
+    def __init__(self):
+        self.current = TEST_USER
+
+    def set_user(self, id: int, email: str):
+        self.current = TokenUser(id=id, email=email)
+
+user_manager = TestUserManager()
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db" 
 
@@ -24,10 +35,10 @@ class FakeRedis:
 
     async def get(self, key):
         return self._store.get(key)
-    
+
     async def set(self, key, value, ex=None):
         self._store[key] = value
-    
+
     async def delete(self, key):
         self._store.pop(key, None)
 
@@ -40,6 +51,9 @@ class FakeRedis:
 
 async def override_get_cache():
     yield FakeRedis()
+
+async def override_get_current_user():
+    return user_manager.current
 
 async def create_tables():
     async with engine.begin() as conn:
@@ -55,10 +69,12 @@ def client():
 
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_cache] = override_get_cache
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
     with TestClient(app) as test_client:
         yield test_client
 
+    app.dependency_overrides.clear()
     asyncio.run(drop_tables())
 
 @pytest.fixture(autouse=True)
@@ -69,25 +85,13 @@ def mock_celery():
 
 @pytest.fixture()
 def auth_client(client):
-
-    registration_payload = {
-            "email": "prakhar@example.com",
-            "password": "12345678"
-            }
-    client.post("/auth/register", json=registration_payload)
-
-    login_payload = {
-            "username": "prakhar@example.com",
-            "password": "12345678"
-            }
-    response = client.post("/auth/login", data=login_payload)
-
-    token = response.json().get("access_token")
-    
-    client.headers.update({"Authorization": f"Bearer {token}"})
-    
+    client.headers.update({"Authorization": "Bearer fake-token"})
     yield client
 
 @pytest.fixture()
 def test_user():
     return {"email": "prakhar@example.com", "password": "12345678"}
+
+@pytest.fixture()
+def user_switcher():
+    return user_manager
