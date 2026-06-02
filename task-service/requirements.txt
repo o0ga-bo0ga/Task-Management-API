@@ -20,3 +20,4 @@ httpx
 uvicorn[standard]
 grpcio
 grpcio-tools
+prometheus-fastapi-instrumentator

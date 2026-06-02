@@ -14,6 +14,7 @@ import structlog
 from app.tasks.notification_tasks import send_notification
 from celery.result import AsyncResult
 from app.worker import celery_app
+from app.metrics import tasks_created_total, cache_hits_total, cache_misses_total
 
 log = structlog.get_logger()
 
@@ -29,6 +30,8 @@ async def create_task(task_data: TaskCreate,
     
     result = send_notification.delay(user.id, task.id, f"Task created: {task.title}", task_data.callback_url)
     job_id = result.id
+
+    tasks_created_total.inc()
 
     return TaskCreateResponse(
         **TaskResponse.model_validate(task).model_dump(),
@@ -75,9 +78,11 @@ async def get_task(task_id: int,
             raise HTTPException(status_code=404, detail="Task not found")
         else:
             log.info("cache_hit", task_id=task_id)
+            cache_hits_total.inc()
             return task
 
     log.info("cache_miss", task_id=task_id)
+    cache_misses_total.inc()
     task = await get_task_by_id(db, task_id)
     
     if(task is None or user.id != task.owner_id):

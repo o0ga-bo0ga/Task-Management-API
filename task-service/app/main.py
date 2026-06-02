@@ -8,6 +8,8 @@ from structlog.stdlib import LoggerFactory
 from structlog.contextvars import bind_contextvars, clear_contextvars
 import uuid
 from .exceptions import global_exception_handler, http_exception_handler
+from prometheus_fastapi_instrumentator import Instrumentator
+from .metrics import tasks_created_total, cache_hits_total, cache_misses_total
 
 logging.basicConfig(
     format="%(message)s", 
@@ -33,6 +35,7 @@ app.add_exception_handler(Exception, global_exception_handler)
 
 app.include_router(task_router)
 
+Instrumentator().instrument(app).expose(app)
 
 log.info("SYSTEM INITIALIZED", status="OK")
 
