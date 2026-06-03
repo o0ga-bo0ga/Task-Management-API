@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+name: task-platform-config
+namespace: task-platform
+data:
+ALGORITHM: HS256
+ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+AUTH_SERVICE_URL: http://auth-service:8000
+TASK_SERVICE_URL: http://task-service:8000
+REDIS_URL: redis://cache:6379
+CELERY_BROKER_URL: redis://cache:6379/0
+CELERY_RESULT_BACKEND: redis://cache:6379/0
