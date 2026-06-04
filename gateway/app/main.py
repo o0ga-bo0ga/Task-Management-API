@@ -16,8 +16,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 async def verify_jwt(request: Request):
-    if request.url.path in ["/auth/login", "/auth/register"]:
+    if request.url.path in ["/auth/login", "/auth/register", "/health"]:
         return
     
     auth_header = request.headers.get("Authorization")

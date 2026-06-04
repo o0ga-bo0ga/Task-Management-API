@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: task-platform
+  labels:
+    app: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: auth-service:latest
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8000
+            - name: grpc
+              containerPort: 50051
+          envFrom:
+            - configMapRef:
+                name: task-platform-config
+            - secretRef:
+                name: my-secret-base64
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret-base64
+                  key: AUTH_DATABASE_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: task-platform
+  labels:
+    app: auth-service
+spec:
+  type: ClusterIP
+  selector:
+    app: auth-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: grpc
+      port: 50051
+      targetPort: 50051

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-pvc
+  name: task-pvc
   namespace: task-platform
 spec:
   accessModes:
@@ -13,19 +13,19 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres-deployment
+  name: task-deployment
   namespace: task-platform
   labels:
-    app: auth-db
+    app: task-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: auth-db
+      app: task-db
   template:
     metadata:
       labels:
-        app: auth-db
+        app: task-db
     spec:
       containers:
         - name: postgres
@@ -55,12 +55,12 @@ spec:
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:
-            claimName: postgres-pvc
+            claimName: task-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-db
+  name: task-db
   namespace: task-platform
 spec:
   type: ClusterIP
@@ -68,4 +68,4 @@ spec:
     - port: 5432
       targetPort: 5432
   selector:
-    app: auth-db
+    app: task-db
