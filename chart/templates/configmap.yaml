@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: task-platform-config
+  namespace: {{ .Values.namespace }}
+data:
+  ALGORITHM: "{{.Values.config.algorithm}}"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "{{.Values.config.accessTokenExpireMinutes}}"
+  AUTH_SERVICE_URL: "{{.Values.config.authServiceUrl}}"
+  TASK_SERVICE_URL: "{{.Values.config.taskServiceUrl}}"
+  REDIS_URL: "{{.Values.config.redisUrl}}"
+  CELERY_BROKER_URL: "{{.Values.config.celeryBrokerUrl}}"
+  CELERY_RESULT_BACKEND: "{{.Values.config.celeryResultBackend}}"

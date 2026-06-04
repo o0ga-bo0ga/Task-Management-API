@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.redis.image }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.redis.image }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.redis.image }}
+    spec:
+      containers:
+        - name: {{ .Values.redis.image }}
+          image: {{ .Values.redis.image }}:{{ .Values.redis.tag }}
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.redis.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: {{ .Values.redis.image }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.redis.port }}
+      targetPort: {{ .Values.redis.port }}
+  type: ClusterIP

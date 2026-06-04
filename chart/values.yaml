@@ -1,0 +1,58 @@
+namespace: task-platform
+
+authService:
+  name: auth-service
+  image: auth-service
+  tag: latest
+  port: 8000
+  grpcPort: 50051
+  replicas: 1
+
+taskService:
+  name: task-service
+  image: task-service
+  tag: latest
+  port: 8000
+  replicas: 2
+
+gateway:
+  name: gateway
+  image: gateway
+  tag: latest
+  port: 8000
+  replicas: 1
+
+redis:
+  name: cache
+  image: redis
+  tag: 7-alpine
+  port: 6379
+
+authDb:
+  image: postgres
+  tag: "15"
+  port: 5432
+
+taskDb:
+  image: postgres
+  tag: "15"
+  port: 5432
+
+config:
+  algorithm: HS256
+  accessTokenExpireMinutes: "30"
+  authServiceUrl: "http://auth-service:8000"
+  taskServiceUrl: "http://task-service:8000"
+  redisUrl: redis://cache:6379
+  celeryBrokerUrl: redis://cache:6379/0
+  celeryResultBackend: redis://cache:6379/0
+
+secrets:
+  SECRET_KEY: "changeme"
+  AUTH_DATABASE_URL: "changeme"
+  POSTGRES_USER: "changeme"
+  POSTGRES_PASSWORD: "changeme"
+  POSTGRES_DB: "changeme"
+  TASK_POSTGRES_USER: "changeme"
+  TASK_POSTGRES_PASSWORD: "changeme"
+  TASK_POSTGRES_DB: "changeme"

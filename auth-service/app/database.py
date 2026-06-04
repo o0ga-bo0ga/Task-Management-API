@@ -5,8 +5,8 @@ from .config import get_settings
 
 env_settings = get_settings()
 
-sync_engine = create_engine(env_settings.DATABASE_URL.replace("+asyncpg", ""))
-engine = create_async_engine(env_settings.DATABASE_URL)
+sync_engine = create_engine(env_settings.AUTH_DATABASE_URL.replace("+asyncpg", ""))
+engine = create_async_engine(env_settings.AUTH_DATABASE_URL)
 
 SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 SessionLocal = async_sessionmaker(engine, autocommit=False, autoflush=False, expire_on_commit=False)
