@@ -39,6 +39,7 @@ spec:
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 10
+      serviceAccountName: {{ .Values.taskService.name }}
 ---
 apiVersion: v1
 kind: Service
