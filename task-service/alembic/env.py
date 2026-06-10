@@ -42,7 +42,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = get_settings().DATABASE_URL
+    url = get_settings().TASK_DATABASE_URL
     context.configure(
         url=url,
         target_metadata=Base.metadata,
@@ -61,7 +61,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = create_engine(get_settings().DATABASE_URL.replace("postgresql+asyncpg", "postgresql"), poolclass=pool.NullPool)
+    connectable = create_engine(get_settings().TASK_DATABASE_URL.replace("postgresql+asyncpg", "postgresql"), poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
         context.configure(

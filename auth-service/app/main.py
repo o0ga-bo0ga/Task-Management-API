@@ -10,6 +10,19 @@ from .exceptions import global_exception_handler, http_exception_handler
 from contextlib import asynccontextmanager
 import threading
 from .grpc.server import serve
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.instrumentation.grpc import GrpcInstrumentorServer
+
+provider = TracerProvider(resource=Resource.create({"service.name": "auth-service"}))
+exporter = OTLPSpanExporter(endpoint="http://jaeger:4317", insecure=True)
+provider.add_span_processor(BatchSpanProcessor(exporter))
+trace.set_tracer_provider(provider)
+GrpcInstrumentorServer().instrument()
 
 logging.basicConfig(
     format="%(message)s", 
@@ -40,6 +53,8 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, global_exception_handler)
 
 app.include_router(auth_router)
+
+FastAPIInstrumentor().instrument_app(app)
 
 log.info("SYSTEM INITIALIZED", status="OK")
 

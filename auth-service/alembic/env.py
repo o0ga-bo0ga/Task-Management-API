@@ -16,7 +16,7 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    url = get_settings().DATABASE_URL
+    url = get_settings().AUTH_DATABASE_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -29,7 +29,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    sync_database_url = get_settings().DATABASE_URL.replace(
+    sync_database_url = get_settings().AUTH_DATABASE_URL.replace(
         "postgresql+asyncpg", "postgresql"
     )
     connectable = create_engine(sync_database_url, poolclass=pool.NullPool)

@@ -1,0 +1,18 @@
+groups:
+  - name: task-platform
+    rules:
+      - alert: TaskServiceDown
+        expr: up{job="task-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Task Service is down"
+      
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5xx"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on task service"
