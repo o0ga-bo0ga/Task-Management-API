@@ -1,7 +1,7 @@
 resource "aws_db_subnet_group" "default"{
     name = "main_db_subnet_group"
     subnet_ids = var.private_subnet_ids
-    tags{
+    tags = {
         Name = "${var.project_name}-${var.environment}-db_subnet_group"
     }
 }
@@ -21,7 +21,7 @@ resource "aws_security_group" "postgres_sg"{
         protocol = "-1"
         cidr_blocks = ["0.0.0.0/0"]
     }
-    tags{
+    tags = {
         Name = "PostgreSQL SG"
     }
 }

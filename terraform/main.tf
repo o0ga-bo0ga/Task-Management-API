@@ -1,0 +1,49 @@
+terraform {
+  required_providers {
+    aws = {
+        source = "hashicorp/aws"
+        version = "~> 5.0"
+    }
+  }
+
+  backend "s3" {
+    bucket = "test-bucket-task-1"
+    key = "terraform.tfstate"
+    region = "ap-south-1"
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+module "vpc" {
+  source = "./modules/vpc"
+  project_name = var.project_name
+  environment = var.environment
+  vpc_cidr = var.vpc_cidr
+  availibility_zones = var.availibility_zones
+  public_subnet_cidrs = var.public_subnet_cidrs
+  private_subnet_cidrs = var.private_subnet_cidrs
+}
+
+module "rds" {
+  source = "./modules/rds"
+  project_name = var.project_name
+  environment = var.environment
+  vpc_cidr = var.vpc_cidr
+  vpc_id = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  db_name = var.db_name
+  db_password = var.db_password
+  db_username = var.db_username
+}
+
+module "elasticache" {
+  source = "./modules/elasticache"
+  project_name = var.project_name
+  environment = var.environment
+  vpc_id = module.vpc.vpc_id
+  vpc_cidr = var.vpc_cidr
+  private_subnet_ids = module.vpc.private_subnet_ids
+}
