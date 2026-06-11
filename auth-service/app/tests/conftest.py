@@ -2,7 +2,7 @@ import os
 import pytest
 from unittest.mock import patch
 
-os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://user:pass@localhost:5432/test_db")
+os.environ.setdefault("AUTH_DATABASE_URL", "postgresql+asyncpg://user:pass@localhost:5432/test_db")
 os.environ.setdefault("SECRET_KEY", "test_secret_key")
 os.environ.setdefault("ALGORITHM", "HS256")
 os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
