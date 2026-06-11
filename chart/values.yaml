@@ -6,7 +6,7 @@ ingress:
 authService:
   name: auth-service
   image: auth-service
-  tag: "92662a47be8060b367f46598f529140b29a6d82e"
+  tag: "f805b312279e1b31e8cafc21979f3a213d3c79a0"
   port: 8000
   grpcPort: 50051
   replicas: 1
@@ -14,14 +14,14 @@ authService:
 taskService:
   name: task-service
   image: task-service
-  tag: "92662a47be8060b367f46598f529140b29a6d82e"
+  tag: "f805b312279e1b31e8cafc21979f3a213d3c79a0"
   port: 8000
   replicas: 1
 
 gateway:
   name: gateway
   image: gateway
-  tag: "92662a47be8060b367f46598f529140b29a6d82e"
+  tag: "f805b312279e1b31e8cafc21979f3a213d3c79a0"
   port: 8000
   replicas: 1
 
